@@ -11,21 +11,7 @@ app.use(cors());
 
 const repositories = [];
 
-function validateProjectId(request, response, next) {
-  const { id } = request.params;
-
-  if (!isUuid(id)) {
-    return response.status(400).json({error: 'Invalid project id'})
-  }
-
-  return next()
-}
-
 app.get("/repositories", (request, response) => {
-  const {title, techs, url} = request.query;
-
-  const results = repositories;
-
   return response.json(repositories);
 });
 
@@ -45,9 +31,9 @@ app.post("/repositories", (request, response) => {
   return response.json(newRepository);
 });
 
-app.put("/repositories/:id", validateProjectId, (request, response) => {
-  const { id } = request.params;
+app.put("/repositories/:id", (request, response) => {
   const {title, techs, url} = request.body;
+  const { id } = request.params;
 
   const repositoryIndex = repositories.findIndex(repo => repo.id === id)
 
@@ -56,12 +42,14 @@ app.put("/repositories/:id", validateProjectId, (request, response) => {
   }
 
   const updateRepo = {
+    id,
     url,
     title,
-    techs
+    techs,
+    likes: repositories[repositoryIndex].likes
   }
 
-  repositories[repositoryIndex] = updateRepo;
+  repositories[repositoryIndex] = updateRepo
 
   return response.json(updateRepo);
 });
@@ -85,8 +73,8 @@ app.post("/repositories/:id/like", (request, response) => {
 
   const repository = repositories.find(repo => repo.id === id);
 
-  if (!repository) {
-    return response.status(400)
+  if (!isUuid(id)) {
+    return response.status(400).json({error: 'nao da'})
   }
 
   repository.likes ++;
